@@ -24,6 +24,7 @@ public class UserController {
      * Подробнее можно почитать в сорцах к аннотации {@link RequestMapping}. Там описано как заинжектить различные атрибуты http-запроса.
      * Возвращаемое значение можно так же варьировать. Н.п. Если отдать InputStream, можно стримить музыку или видео
      */
+    //TODO: Method "register" -  Обработать 500 ошибки. К примеру, если прислать неполные данные в json, то вылетит 500 ошибка.
     @RequestMapping(path = "/register", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public String register(@RequestBody UserProfile userProfile, HttpSession httpSession) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -51,6 +52,7 @@ public class UserController {
         }
 
 
+
 //        if (httpSession.getAttribute(email) != null) {
 //            return gson.toJson(userProfile);
 //        } else {
@@ -59,6 +61,27 @@ public class UserController {
 //        }
 
 
+    }
+    @RequestMapping(path = "/login", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    public String login(@RequestBody UserProfile userProfile, HttpSession httpSession) {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String email = userProfile.getEmail();
+        String password = userProfile.getPassword();
+
+        if (password.isEmpty()) {
+            return gson.toJson("Поле \"пароль\" пустое. Заполните его.");
+        }
+        if (email.isEmpty()) {
+            return gson.toJson("Поле \"email\" пустое. Заполните его.");
+        }
+
+        if (accountService.login(email, password)) {
+            userProfile = accountService.getUser(email);
+            httpSession.setAttribute("email", email);
+            return gson.toJson(userProfile);
+        } else {
+            return gson.toJson("\"result\" : \"Неверное имя пользователя или пароль\"");
+        }
     }
 
     /**

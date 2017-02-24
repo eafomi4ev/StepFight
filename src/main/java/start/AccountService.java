@@ -42,10 +42,20 @@ public class AccountService {
         }
     }
 
-    public boolean login(@NotNull String name, @NotNull String password) {
-        //your code here
+    public boolean login(@NotNull String email, @NotNull String password) {
+        UserProfile userProfile = userNameToUserProfile.get(email);
 
+        if (userProfile != null) {
+            if (userProfile.getPassword().equals(password)) {
+                return true;
+            }
+        }
         return false;
+    }
+
+    @NotNull
+    public UserProfile getUser(String email) {
+        return userNameToUserProfile.get(email);
     }
 
     //we need more methods
