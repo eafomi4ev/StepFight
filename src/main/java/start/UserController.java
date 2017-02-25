@@ -3,10 +3,10 @@ package start;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
@@ -19,38 +19,45 @@ public class UserController {
 
     @NotNull
     private final AccountService accountService;
+
     /**
      * Данный метод вызывается с помощью reflection'a, поэтому Spring позволяет инжектить в него аргументы.
      * Подробнее можно почитать в сорцах к аннотации {@link RequestMapping}. Там описано как заинжектить различные атрибуты http-запроса.
      * Возвращаемое значение можно так же варьировать. Н.п. Если отдать InputStream, можно стримить музыку или видео
      */
-    //TODO: Method "register" -  Обработать 500 ошибки. К примеру, если прислать неполные данные в json, то вылетит 500 ошибка.
+    //TODO: Method "register" -   Обработать 500 ошибки. К примеру, если прислать неполные данные в json, то вылетит 500 ошибка.
     @RequestMapping(path = "/register", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public String register(@RequestBody UserProfile userProfile, HttpSession httpSession) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String name = userProfile.getName();
-        if (userProfile.getName().isEmpty()) {
-            return gson.toJson("Поле 'имя' пустое. Заполните его.");
+        JSONObject resultJson = new JSONObject();
+        JSONArray errorsJson = new JSONArray();
+
+        if (StringUtils.isEmpty(userProfile.getName())) {
+            errorsJson.put("Поле 'имя' пустое. Заполните его.");
         }
-        if (userProfile.getPassword().isEmpty()) {
-            return gson.toJson("Поле \"пароль\" пустое. Заполните его.");
+        if (StringUtils.isEmpty(userProfile.getPassword())) {
+            errorsJson.put("Поле \"пароль\" пустое. Заполните его.");
         }
-        if (userProfile.getEmail().isEmpty()) {
-            return gson.toJson("Поле \"email\" пустое. Заполните его.");
+        if (StringUtils.isEmpty(userProfile.getEmail())) {
+            errorsJson.put((String)"Поле \"email\" пустое. Заполните его.");
         }
-        if (userProfile.getNick().isEmpty()) {
-            return gson.toJson("Поле \"ник\" пустое. Заполните его.");
+        if (StringUtils.isEmpty(userProfile.getNick())) {
+            errorsJson.put("Поле \"ник\" пустое. Заполните его.");
+        }
+
+        if (errorsJson.length() != 0) {
+            resultJson.put("error", errorsJson);
+            return resultJson.toString();
         }
 
         userProfile = accountService.register(userProfile);
 
         if (userProfile != null) {
-            httpSession.setAttribute("email", userProfile.getEmail());
+//            httpSession.setAttribute("email", userProfile.getEmail());
             return gson.toJson(userProfile);
         } else {
-            return gson.toJson("Пользователь с такими данными уже есть.");
+            return resultJson.put("error", "Такой пользователь уже существует").toString();
         }
-
 
 
 //        if (httpSession.getAttribute(email) != null) {
@@ -62,6 +69,7 @@ public class UserController {
 
 
     }
+
     @RequestMapping(path = "/login", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public String login(@RequestBody UserProfile userProfile, HttpSession httpSession) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -83,6 +91,15 @@ public class UserController {
             return gson.toJson("\"result\" : \"Неверное имя пользователя или пароль\"");
         }
     }
+
+    @RequestMapping(path = "/currentsessionuser", method = RequestMethod.GET)
+    public String currentSessionUser(@RequestParam("email") String email, HttpSession httpSession) {
+//        String email = httpServletRequest.getParameter("email");
+        JSONObject resultJson = new JSONObject();
+        return resultJson.put("currentSessionUser", accountService.getUserOfCurrentSession(httpSession).getEmail()).toString();
+    }
+
+
 
     /**
      * Конструктор тоже будет вызван с помощью reflection'а. Другими словами, объект создается через ApplicationContext.

@@ -3,6 +3,7 @@ package start;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,7 +31,7 @@ public class AccountService {
      * <tt>null</tt> если пользователь с таким email уже есть в БД
      */
 
-    public UserProfile register(@NotNull UserProfile userProfile) {
+    public final UserProfile register(@NotNull UserProfile userProfile) {
 //        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String email = userProfile.getEmail(); //кэшируем значение, чтобы не вызывать геттер много раз
         if (!userNameToUserProfile.containsKey(userProfile.getEmail())) {
@@ -42,7 +43,7 @@ public class AccountService {
         }
     }
 
-    public boolean login(@NotNull String email, @NotNull String password) {
+    public final boolean login(@NotNull String email, @NotNull String password) {
         UserProfile userProfile = userNameToUserProfile.get(email);
 
         if (userProfile != null) {
@@ -53,9 +54,12 @@ public class AccountService {
         return false;
     }
 
-    @NotNull
-    public UserProfile getUser(String email) {
+    public UserProfile getUser(@NotNull String email) {
         return userNameToUserProfile.get(email);
+    }
+
+    public final UserProfile getUserOfCurrentSession(@NotNull HttpSession httpSession) {
+        return userNameToUserProfile.get(httpSession.getAttribute("email"));
     }
 
     //we need more methods
