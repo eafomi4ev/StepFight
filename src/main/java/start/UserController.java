@@ -1,12 +1,18 @@
 package start;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpSession;
 
@@ -39,7 +45,7 @@ public class UserController {
             errorsJson.put("Поле \"пароль\" пустое. Заполните его.");
         }
         if (StringUtils.isEmpty(userProfile.getEmail())) {
-            errorsJson.put((String)"Поле \"email\" пустое. Заполните его.");
+            errorsJson.put("Поле \"email\" пустое. Заполните его.");
         }
         if (StringUtils.isEmpty(userProfile.getNick())) {
             errorsJson.put("Поле \"ник\" пустое. Заполните его.");
@@ -92,13 +98,22 @@ public class UserController {
         }
     }
 
-    @RequestMapping(path = "/currentsessionuser", method = RequestMethod.GET)
-    public String currentSessionUser(@RequestParam("email") String email, HttpSession httpSession) {
-//        String email = httpServletRequest.getParameter("email");
+    @RequestMapping(path = "/currentsessionuser", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    public String currentSessionUser(HttpSession httpSession) {
         JSONObject resultJson = new JSONObject();
         return resultJson.put("currentSessionUser", accountService.getUserOfCurrentSession(httpSession).getEmail()).toString();
     }
 
+    @RequestMapping(path = "/logout", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    public String changeUserData(@RequestBody SessionKey sessionKey, HttpSession httpSession) {
+        if (!StringUtils.isEmpty(httpSession.getAttribute("email")) && httpSession.getAttribute("email").equals(sessionKey.getKey())) {
+            httpSession.removeAttribute("email");
+            return new JSONObject().put("result", "success").toString();
+        } else {
+            return new JSONObject().put("error", HttpStatus.UNAUTHORIZED.toString() + " - " + HttpStatus.UNAUTHORIZED.getReasonPhrase()).toString();
+
+        }
+    }
 
 
     /**
@@ -110,16 +125,16 @@ public class UserController {
     }
 
 
-//    private static final class GetMsgRequest {
-//        int userId;
-//
-//        @JsonCreator
-//        GetMsgRequest(@JsonProperty("userId") int userId) {
-//            this.userId = userId;
-//        }
-//
-//        public int getUserId() {
-//            return userId;
-//        }
-//    }
+    private static final class SessionKey {
+        String key;
+
+        @JsonCreator
+        SessionKey(@JsonProperty("email") String key) {
+            this.key = key;
+        }
+
+        public String getKey() {
+            return key;
+        }
+    }
 }
