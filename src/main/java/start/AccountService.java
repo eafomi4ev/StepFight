@@ -33,7 +33,7 @@ public class AccountService {
 
     public final UserProfile register(@NotNull UserProfile userProfile) {
 //        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String email = userProfile.getEmail(); //кэшируем значение, чтобы не вызывать геттер много раз
+        final String email = userProfile.getEmail(); //кэшируем значение, чтобы не вызывать геттер много раз
         if (!userNameToUserProfile.containsKey(userProfile.getEmail())) {
             userProfile.setId();
             userNameToUserProfile.put(email, userProfile);
@@ -44,14 +44,13 @@ public class AccountService {
     }
 
     public final boolean login(@NotNull String email, @NotNull String password) {
-        UserProfile userProfile = userNameToUserProfile.get(email);
+        final UserProfile userProfile = userNameToUserProfile.get(email);
 
-        if (userProfile != null) {
-            if (userProfile.getPassword().equals(password)) {
-                return true;
-            }
+        if (userProfile != null && userProfile.getPassword().equals(password)) {
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public UserProfile getUser(@NotNull String email) {
