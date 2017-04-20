@@ -1,7 +1,8 @@
-package start;
+package application.services;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import application.start.UserProfile;
 
 import javax.servlet.http.HttpSession;
 import java.util.HashMap;
@@ -31,9 +32,9 @@ public class AccountService {
      * <tt>null</tt> если пользователь с таким email уже есть в БД
      */
 
-    public final UserProfile register(@NotNull UserProfile userProfile) {
+    public final UserProfile signup(@NotNull UserProfile userProfile) {
 //        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String email = userProfile.getEmail(); //кэшируем значение, чтобы не вызывать геттер много раз
+        final String email = userProfile.getEmail(); //кэшируем значение, чтобы не вызывать геттер много раз
         if (!userNameToUserProfile.containsKey(userProfile.getEmail())) {
             userProfile.setId();
             userNameToUserProfile.put(email, userProfile);
@@ -44,14 +45,13 @@ public class AccountService {
     }
 
     public final boolean login(@NotNull String email, @NotNull String password) {
-        UserProfile userProfile = userNameToUserProfile.get(email);
+        final UserProfile userProfile = userNameToUserProfile.get(email);
 
-        if (userProfile != null) {
-            if (userProfile.getPassword().equals(password)) {
-                return true;
-            }
+        if (userProfile != null && userProfile.getPassword().equals(password)) {
+            return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public UserProfile getUser(@NotNull String email) {
