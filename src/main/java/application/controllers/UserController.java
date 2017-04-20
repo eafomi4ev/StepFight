@@ -147,7 +147,7 @@ public class UserController {
     }
 
     @CrossOrigin
-    @RequestMapping(path = "/currentsessionuser", method = RequestMethod.POST,
+    @RequestMapping(path = "/currentsessionuser", method = RequestMethod.GET,
             produces = "application/json", consumes = "application/json")
     public ResponseEntity currentSessionUser(HttpSession httpSession) {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
