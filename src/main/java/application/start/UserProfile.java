@@ -1,4 +1,4 @@
-package start;
+package application.start;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -11,11 +11,15 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UserProfile {
     private static final AtomicLong ID_GENERATOR = new AtomicLong(1);
 
+//    @JsonProperty
     private Long id;
-
+//    @JsonProperty
     private String name;
+//    @JsonProperty
     private String password;
+//    @JsonProperty
     private String email;
+//    @JsonProperty
     private String nick;
 
 //    UserProfile(String name, String password, String email, String nick){
@@ -39,7 +43,7 @@ public class UserProfile {
         return id;
     }
 
-    protected final void setId() {
+    public final void setId() {
         this.id = ID_GENERATOR.getAndIncrement();
     }
 
